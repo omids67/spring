@@ -15,13 +15,13 @@
  */
 package org.mybatis.spring.mapper;
 
-import static org.springframework.util.Assert.notNull;
-
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.Configuration;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.FactoryBean;
+
+import static org.springframework.util.Assert.notNull;
 
 /**
  * BeanFactory that enables injection of MyBatis mapper interfaces. It can be set up with a
@@ -52,7 +52,7 @@ import org.springframework.beans.factory.FactoryBean;
  * @see SqlSessionTemplate
  * @version $Id$
  */
-public class MapperFactoryBean<T> extends SqlSessionDaoSupport implements FactoryBean<T> {
+public class MapperFactoryBean<T> extends SqlSessionDaoSupport implements FactoryBean {
 
   private Class<T> mapperInterface;
 

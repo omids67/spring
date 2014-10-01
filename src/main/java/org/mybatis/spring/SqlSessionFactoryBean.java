@@ -15,17 +15,6 @@
  */
 package org.mybatis.spring;
 
-import static org.springframework.util.Assert.notNull;
-import static org.springframework.util.ObjectUtils.isEmpty;
-import static org.springframework.util.StringUtils.hasLength;
-import static org.springframework.util.StringUtils.tokenizeToStringArray;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.executor.ErrorContext;
@@ -52,6 +41,16 @@ import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import static org.springframework.util.Assert.notNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasLength;
+import static org.springframework.util.StringUtils.tokenizeToStringArray;
+
 /**
  * {@code FactoryBean} that creates an MyBatis {@code SqlSessionFactory}.
  * This is the usual way to set up a shared MyBatis {@code SqlSessionFactory} in a Spring application context;
@@ -64,12 +63,12 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
  * @author Putthibong Boonbong
  * @author Hunter Presnall
  * @author Eduardo Macarron
- * 
+ *
  * @see #setConfigLocation
  * @see #setDataSource
  * @version $Id$
  */
-public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, InitializingBean, ApplicationListener<ApplicationEvent> {
+public class SqlSessionFactoryBean implements FactoryBean, InitializingBean, ApplicationListener {
 
   private static final Log LOGGER = LogFactory.getLog(SqlSessionFactoryBean.class);
 
@@ -113,7 +112,7 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
 
   /**
    * Sets the ObjectFactory.
-   * 
+   *
    * @since 1.1.2
    * @param objectFactory
    */
@@ -123,7 +122,7 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
 
   /**
    * Sets the ObjectWrapperFactory.
-   * 
+   *
    * @since 1.1.2
    * @param objectWrapperFactory
    */
@@ -143,7 +142,7 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
 
   /**
    * Sets the DatabaseIdProvider.
-   * As of version 1.2.2 this variable is not initialized by default. 
+   * As of version 1.2.2 this variable is not initialized by default.
    *
    * @since 1.1.0
    * @param databaseIdProvider
@@ -455,7 +454,10 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
     }
 
     if (!isEmpty(this.mapperLocations)) {
-      for (Resource mapperLocation : this.mapperLocations) {
+      //for (Resource mapperLocation : this.mapperLocations) {
+      for (int i = 0; i < this.mapperLocations.length; i++) {
+        Resource mapperLocation = this.mapperLocations[i];
+
         if (mapperLocation == null) {
           continue;
         }
@@ -465,6 +467,8 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
               configuration, mapperLocation.toString(), configuration.getSqlFragments());
           xmlMapperBuilder.parse();
         } catch (Exception e) {
+          //I add this line in order to fixed the circular loop bug of this method
+          this.mapperLocations[i] = null;
           throw new NestedIOException("Failed to parse mapping resource: '" + mapperLocation + "'", e);
         } finally {
           ErrorContext.instance().reset();
